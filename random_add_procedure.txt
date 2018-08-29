@@ -1,0 +1,75 @@
+table:
+
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(5) NOT NULL,
+  `age` int(2) DEFAULT NULL,
+  `sex` int(1) DEFAULT NULL,
+  `ctime` date NOT NULL,
+  `remark` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+
+
+script:
+
+BEGIN
+DECLARE rowid INT DEFAULT 0;
+DECLARE firstname VARCHAR(1);
+DECLARE name1 VARCHAR(1);
+DECLARE name2 VARCHAR(1);
+DECLARE lastname VARCHAR(3) DEFAULT '';
+DECLARE age INT(2);
+DECLARE sex INT(1);
+DECLARE ctime date;
+DECLARE remark VARCHAR(1000);
+
+SET @word = "当今世界正处于大发展大变革大调整时期，我们要具备战略眼光，树立全球视野，既要有风险忧患意识，又要有历史机遇意识，努力在这场百年未有之大变局中把握航向。”习近平强调，以共建“一带一路”为实践平台推动构建人类命运共同体，这是从我国改革开放和长远发展出发提出来的，也符合中华民族历来秉持的天下大同理念，符合中国人怀柔远人、和谐万邦的天下观，占据了国际道义制高点当今世界正处于大发展大变革大调整时期，我们要具备战略眼光，树立全球视野，既要有风险忧患意识，又要有历史机遇意识，努力在这场百年未有之大变局中把握航向。”习近平强调，以共建“一带一路”为实践平台推动构建人类命运共同体，这是从我国改革开放和长远发展出发提出来的，也符合中华民族历来秉持的天下大同理念，符合中国人怀柔远人、和谐万邦的天下观，占据了国际道义制高点";
+SET @fn = "赵钱孙李周吴郑王林杨柳刘孙陈江阮侯邹高彭徐";
+SET @ln = "一二三四五六七八九十甲乙丙丁静景京晶名明铭敏闵民军君俊骏天田甜兲恬益依成城诚立莉力黎励";
+SET @exedata = "";
+
+WHILE rowid < num DO
+SET rowid = rowid + 1;
+SET @RAND = RAND(); # 随机数，0~1，左开右闭
+SET @ROUND = ROUND(@RAND);#四舍五入
+#name
+SET firstname = SUBSTRING("赵钱孙李周吴郑王林杨柳刘孙陈江阮侯邹高彭徐",FLOOR(1+21*@RAND),1); 
+SET name1 = SUBSTRING(@ln,ROUND(1+43*@RAND),1); 
+SET name2 = SUBSTRING(@ln,ROUND(1+43*@RAND),1); 
+IF @ROUND = 0 THEN
+SET lastname = CONCAT(firstname,name1);
+ELSE
+SET lastname = CONCAT(firstname,name1,name2);
+END IF;
+#age sex ctime
+SET age = FLOOR(20+@RAND*30);
+SET sex = FLOOR(0 + (@RAND * 2));
+SET ctime = CURDATE();
+#remark
+SET remark = SUBSTRING(@word,FLOOR(1+@RAND*300),FLOOR(1+@RAND*300));
+
+IF length(@exedata)>0 THEN
+SET @exedata = CONCAT(@exedata,',');
+END IF;
+SET @exedata=concat(@exedata,"('",lastname,"','",age,"','",sex,"','",ctime,"','",remark,"')");
+IF rowid%1000=0
+THEN 
+		SET @exesql =concat("insert into user(name,age,sex,ctime,remark) values ", @exedata);
+		prepare stmt from @exesql;
+		execute stmt;
+		DEALLOCATE prepare stmt;
+		SET @exedata = "";
+END IF;
+END WHILE;
+IF length(@exedata)>0 
+THEN
+		SET @exesql =concat("insert into user(name,age,sex,ctime,remark) values ", @exedata);
+		prepare stmt from @exesql;
+		execute stmt;
+		DEALLOCATE prepare stmt;
+END IF; 
+END
+
+ref:
+https://blog.csdn.net/u013399093/article/details/54585785
